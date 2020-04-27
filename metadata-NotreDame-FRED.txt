@@ -1,0 +1,31 @@
+team_name: NotreDame-FRED
+team_abbr: NotreDame
+institution_affil: University of Notre Dame, Department of Biological Sciences
+team_funding: Guido Espana is funded in part by a RAPID grant.
+team_experience: ?
+
+model_name: NotreDame-FRED
+model_abbr: FRED
+model_output: 
+model_repo: ?
+
+model_contributors: alex perkins <taperkins@nd.edu> sean moore <> guido espana <> sean cavany <> anita lerch <> rachel oidtman <> annaliese wieler <awiens@nd.edu> quan tran <> alan costello <> marya poterek <> carly barbera <>   
+Model_targets: day ahead inc
+Target_loc: US, some states
+time_horizon:
+Data_format: all requested quantiles
+forecast_startdate: 2020-04-13
+forecast_frequency: daily
+
+data_inputs_known: Daily deaths count
+data_source_known: New York Times
+
+this_model_is_an_ensemble: FALSE
+this_model_is_unconditional: FALSE
+
+methods: >-
+    FRED is an agent-based model developed for influenza with parameters modified to represent the natural history of COVID-19
+
+methods_long: >-
+    FRED is an agent-based model developed for modeling the 2009 influnza pandemic which simulates the spread of the virus in a population by recreating interactions among people on a daily basis.
+	 Parameters were modified to represent the natural history of COVID-19. We limited interventions to school closures and shelter in place.

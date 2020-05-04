@@ -1,0 +1,141 @@
+
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ##===============================#
+> ## Get msa names
+> ## Author: Guido España
+> ## 2020
+> ##===============================#
+> ## Setup-------------
+> ##===============================#
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.3.0     ✔ purrr   0.3.4
+✔ tibble  3.0.1     ✔ stringr 1.4.0
+✔ tidyr   1.0.2     ✔ forcats 0.5.0
+✔ readr   1.3.1     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+> library(RColorBrewer)
+> 
+> ##===============================#
+> ## Process output-------------
+> ##===============================#
+> ## FRED output
+> outdir = '../../experiments/Validation_simulations/output/'
+> 
+> intervals_df = read_csv(file.path(outdir, 'fred_test_intervals.csv')) %>%
++     mutate(serial_interval = symp - symp_infector, generation_interval = day - day_infector )
+Parsed with column specification:
+cols(
+  day = col_double(),
+  host = col_double(),
+  age = col_double(),
+  infector = col_double(),
+  symp = col_double(),
+  day_infector = col_double(),
+  age_infector = col_double(),
+  infector_infector = col_double(),
+  symp_infector = col_double()
+)
+> periods_df = read_csv(file.path(outdir, 'fred_test_periods.csv'))
+Parsed with column specification:
+cols(
+  host = col_double(),
+  age = col_double(),
+  inf_period = col_double(),
+  symp_period = col_double()
+)
+> asymp_periods_df = read_csv(file.path(outdir, 'fred_test_asymp_periods.csv'))
+Parsed with column specification:
+cols(
+  host = col_double(),
+  age = col_double(),
+  inf1 = col_double(),
+  inf2 = col_double(),
+  symp1 = col_double(),
+  symp2 = col_double()
+)
+> 
+> ##===============================#
+> ## Serial interval --------
+> ##===============================#
+> jpeg('../figures/report_figure_parameter_periods.jpeg', width=7,height=5, units = "in", res = 300)
+> layout(matrix(c(1,2,3,4),nrow = 2, byrow =T))
+> par(mar = c(4,4,2,1))
+> hist(periods_df$inf_period, main ="",xaxs = "i", yaxs = "i",
++      xlab = "Infectious period (days)", freq = F, col = "#e0e0e0", breaks = 1:17)
+> 
+> hist(periods_df$symp_period, main = "",xaxs = "i", yaxs = "i", freq = F,
++      xlab = "Symptomatic period (days)", col = "#e0e0e0", ylab = "")
+> 
+> hist(intervals_df$serial_interval, main ="",xaxs = "i", yaxs = "i",freq = F,
++      xlab = "Serial interval (days)", xlim = c(0,30), col = "#e0e0e0")
+> 
+> hist(intervals_df$generation_interval, main ="", xaxs = "i", yaxs = "i", freq = F,
++      xlab = "Generation interval (days)", xlim = c(0,30), col = "#e0e0e0", ylab = "")
+> 
+> dev.off()
+null device 
+          1 
+> 
+> ##===============================#
+> ## Serial interval --------
+> ##===============================#
+> age_cuts = seq(from=0,by=10,to=90)
+> age_cuts[length(age_cuts)] = 120
+> age_labels = sprintf("%d",age_cuts[2:length(age_cuts)])
+> age_labels[length(age_labels)] = "81+"
+> asymp_age_df = asymp_periods_df %>%
++     mutate(age_group = as.character(cut(age,breaks = age_cuts,labels = age_labels, include.lowest = T, right = F))) 
+> inf_counts = asymp_age_df %>% 
++     group_by(age_group) %>%
++     summarize(totalInf = n())
+> 
+> ar_prop = array(0,c(150,2))
+> 
+> for(ii in 1:150){
++     symp_counts = asymp_age_df %>%
++         filter(symp1 != -1, symp1 < ii) %>%
++         group_by(age_group) %>%
++         summarize(totalSymp = n()) %>%
++         right_join(inf_counts, by = "age_group") %>%
++         mutate(PropSymp = totalSymp / totalInf) %>%
++         arrange(age_group)
++     ar_prop[ii,1] = sum(symp_counts$totalSymp) / sum(symp_counts$totalInf)
++     ar_prop[ii,2] = sum(symp_counts$totalSymp)
++     
++ }
+> 
+> proc.time()
+   user  system elapsed 
+  6.137   0.246   6.387 

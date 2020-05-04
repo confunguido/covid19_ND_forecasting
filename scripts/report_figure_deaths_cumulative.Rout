@@ -1,0 +1,556 @@
+
+R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ##===============================#
+> ## Get msa names
+> ## Author: Guido España & Rachel Oidtman
+> ## 2020
+> ##===============================#
+> ## Setup-------------
+> ##===============================#
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.3.0     ✔ purrr   0.3.4
+✔ tibble  3.0.1     ✔ stringr 1.4.0
+✔ tidyr   1.0.2     ✔ forcats 0.5.0
+✔ readr   1.3.1     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+> library(RColorBrewer)
+> library(wesanderson)
+> library(lubridate)
+
+Attaching package: ‘lubridate’
+
+The following objects are masked from ‘package:dplyr’:
+
+    intersect, setdiff, union
+
+The following objects are masked from ‘package:base’:
+
+    date, intersect, setdiff, union
+
+> library(vioplot)
+Loading required package: sm
+Package 'sm', version 2.2-5.6: type help(sm) for summary information
+Loading required package: zoo
+
+Attaching package: ‘zoo’
+
+The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+> 
+> ##===============================#
+> ## Data from NYT or JHU------------
+> ##===============================#
+> interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>%
++     filter(State != 'NY')
+Parsed with column specification:
+cols(
+  State = col_character(),
+  School_closure = col_date(format = ""),
+  Shelter_in_place = col_date(format = ""),
+  state_name = col_character(),
+  end_shelter_date = col_date(format = ""),
+  early_rate = col_double()
+)
+> 
+> data_source = "JHU"
+> data_sys = system(sprintf("Rscript ./download_covid_data.R %s", data_source), intern = TRUE)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.3.0     ✔ purrr   0.3.4
+✔ tibble  3.0.1     ✔ dplyr   0.8.5
+✔ tidyr   1.0.2     ✔ stringr 1.4.0
+✔ readr   1.3.1     ✔ forcats 0.5.0
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+
+Attaching package: ‘lubridate’
+
+The following objects are masked from ‘package:dplyr’:
+
+    intersect, setdiff, union
+
+The following objects are masked from ‘package:base’:
+
+    date, intersect, setdiff, union
+
+trying URL 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv'
+Content type 'text/plain; charset=utf-8' length 105807 bytes (103 KB)
+==================================================
+downloaded 103 KB
+
+trying URL 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
+Content type 'text/plain; charset=utf-8' length 1074886 bytes (1.0 MB)
+==================================================
+downloaded 1.0 MB
+
+trying URL 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
+Content type 'text/plain; charset=utf-8' length 1025000 bytes (1000 KB)
+==================================================
+downloaded 1000 KB
+
+Parsed with column specification:
+cols(
+  date = col_date(format = ""),
+  state = col_character(),
+  fips = col_character(),
+  cases = col_double(),
+  deaths = col_double()
+)
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  iso2 = col_character(),
+  iso3 = col_character(),
+  Admin2 = col_character(),
+  Province_State = col_character(),
+  Country_Region = col_character(),
+  Combined_Key = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  iso2 = col_character(),
+  iso3 = col_character(),
+  Admin2 = col_character(),
+  Province_State = col_character(),
+  Country_Region = col_character(),
+  Combined_Key = col_character()
+)
+See spec(...) for full column specifications.
+Joining, by = c("state", "date")
+Joining, by = "state"
+> 
+> if(!is.null(attr(data_sys, "status"))){
++     stop("Something went wrong with downloading incidence data\n")
++ }
+> 
+> if(!file.exists('../../data/US_states_covid_data.csv')){
++     stop("Something went wrong with downloading incidence data\n")
++ }
+> us_states_temp = read_csv('../../data/US_states_covid_data.csv')
+Parsed with column specification:
+cols(
+  state = col_character(),
+  date = col_date(format = ""),
+  cases = col_double(),
+  deaths = col_double(),
+  fips = col_character()
+)
+> 
+> us_states = us_states_temp %>%
++     filter(state %in% interventions_df$state_name) %>%
++     left_join(interventions_df, by = c("state" = "state_name")) %>%
++     group_by(State) %>%
++     mutate(cases_inc = c(cases[1], diff(cases)),
++            deaths_inc = c(deaths[1], diff(deaths))) %>%
++     ungroup()
+> 
+> fit_data = read_csv('../../experiments/Midwest_simulations/output/CALIBRATION/US_states_covid_data.csv') %>%
++     filter(state %in% interventions_df$state_name) %>%
++     left_join(interventions_df, by = c("state" =  "state_name")) %>%
++     group_by(State) %>%
++     mutate(cases_inc = c(cases[1], diff(cases)),
++            deaths_inc = c(deaths[1], diff(deaths))) %>%
++     ungroup()
+Parsed with column specification:
+cols(
+  state = col_character(),
+  date = col_date(format = ""),
+  cases = col_double(),
+  deaths = col_double(),
+  fips = col_character()
+)
+> 
+> ##===============================#
+> ## Process output-------------
+> ##===============================#
+> outdir = '../../experiments/Midwest_simulations/output/SHORT_FORECAST'
+> fred_sweep_df = tibble()
+> params_sweep_df = tibble()
+> 
+> for(nn in 1:nrow(interventions_df)){    
++   outdir_st = file.path(outdir, sprintf('FRED_%s_short_forecast_asymp_out', interventions_df$State[nn]))
++   data_out = file.path(outdir_st,'fred_output.csv')
++   params_out = file.path(outdir_st, 'FRED_parameters_out.csv')
++   params_df = read_csv(params_out)
++   tmp_sweep_df = read_csv(data_out) %>%
++     right_join(params_df, by = c("job_id" = "job_id")) %>%
++     mutate(Date = as.Date("2020-01-01") + Day)    
++   fred_sweep_df = bind_rows(fred_sweep_df, tmp_sweep_df)
++   params_sweep_df = bind_rows(params_sweep_df,params_df)
++ }
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  start_date = col_date(format = ""),
+  primary_cases_file = col_character(),
+  school_closure_policy = col_character(),
+  intervention_name = col_character(),
+  job_id = col_character(),
+  params_file = col_character(),
+  state_name = col_character(),
+  advance_seeding = col_character()
+)
+See spec(...) for full column specifications.
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  job_id = col_character()
+)
+See spec(...) for full column specifications.
+> 
+> fred_sweep_df = fred_sweep_df %>% group_by(seed,state_name) %>% mutate(CumCF = cumsum(CF_mean)) %>% ungroup()
+> # fred_sweep_df = fred_sweep_df %>% drop_na
+> 
+> ##===============================#
+> ## Necessary functions-----------
+> ##===============================#
+> 
+> # get sunday of each week for labeling
+> yearSunday <- function(year) {
++   dates <- as.Date(paste(year, "-01-01", sep = "")) + 0:6
++   days <- weekdays(dates) == "Sunday"
++   seq(dates[days], as.Date(paste(year, "-12-31", sep = "")),  by = "+7 day")
++ }
+> 
+> 
+> # CrI
+> write_CI = function(param_posterior, lwr = 0.025, upr = 0.975){
++   mat = matrix(0, ncol = ncol(param_posterior), nrow = 3)
++   
++   for(ii in 1:ncol(param_posterior)){
++     mat[1, ii] = quantile(param_posterior[, ii], c(lwr, upr), na.rm = T)[1]
++     mat[2, ii] = quantile(param_posterior[, ii], c(lwr, upr), na.rm = T)[2]  
++     mat[3, ii] = median(param_posterior[, ii], na.rm = T)
++   }
++   return(mat)
++ }
+> 
+> 
+> ##===============================#
+> ## Cumulative deaths ------------
+> ##===============================#
+> # number of reps
+> num_reps = 500
+> max_date = '2020-06-15'
+> fit_date = '2020-04-30'
+> states = interventions_df$State
+> intervention_scenarios = c('Shelter_0', 'ShelterAll')
+> 
+> total_deaths_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> total_symptomatic_infs_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> total_infs_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> 
+> for(nn in 1:nrow(interventions_df)){
++   
++   ss = interventions_df$State[nn]
++   print(ss)
++   st_intervention_tmp = filter(interventions_df, State == ss)
++   state_fred = filter(fred_sweep_df, state_name == ss) 
++   interv_sc = "Shelter_0"
++   intervention_fred = filter(state_fred, intervention_name == interv_sc)
++   
++   intervention_end = intervention_fred$shelter_in_place_duration_mean[1] + intervention_fred$shelter_in_place_delay_mean[1]
++   
++   
++   job_seeds = unique(intervention_fred$seed) 
++   for(sd in 1:length(job_seeds)){
++     tmp_fred = filter(intervention_fred, seed == job_seeds[sd])
++     total_deaths_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$CF_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))])
++     total_symptomatic_infs_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$Cs_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))])
++     total_infs_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$C_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))]) / tmp_fred$N_mean[1]
++   }
++   
++   interv_sc = "ShelterAll"
++   intervention_fred = filter(state_fred, intervention_name == interv_sc)
++   
++   job_seeds = unique(intervention_fred$seed) 
++   for(sd in 1:length(job_seeds)){
++     tmp_fred = filter(intervention_fred, seed == job_seeds[sd])
++     total_deaths_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$CF_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))])
++     total_symptomatic_infs_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$Cs_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))])
++     total_infs_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$C_mean[yday(as.Date('2020-02-01')):yday(as.Date(max_date))])/ tmp_fred$N_mean[1]
++   }
++ }
+[1] "MI"
+[1] "IL"
+[1] "IN"
+[1] "WI"
+[1] "MN"
+[1] "OH"
+[1] "KY"
+> 
+> 
+> 
+> ##===============================#
+> ## Validation -------------------
+> ##===============================#
+> # number of reps
+> num_reps = 500 
+> states = interventions_df$State
+> total_deaths_through_413_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> total_symptomatic_infs_through_413_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> total_infs_through_413_over_scenarios = array(NA, c(length(states), num_reps, length(intervention_scenarios)))
+> 
+> for(nn in 1:nrow(interventions_df)){
++   
++   ss = interventions_df$State[nn]
++   print(ss)
++   st_intervention_tmp = filter(interventions_df, State == ss)
++   state_fred = filter(fred_sweep_df, state_name == ss) 
++ 
++   interv_sc = "Shelter_0"
++   intervention_fred = filter(state_fred, intervention_name == interv_sc)
++   
++   intervention_end = intervention_fred$shelter_in_place_duration_mean[1] + intervention_fred$shelter_in_place_delay_mean[1]
++   
++   
++   job_seeds = unique(intervention_fred$seed) 
++   for(sd in 1:length(job_seeds)){
++     tmp_fred = filter(intervention_fred, seed == job_seeds[sd])
++     total_deaths_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$CF_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))])
++     total_symptomatic_infs_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$Cs_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))])
++     total_infs_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$C_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))]) / tmp_fred$N_mean[1]
++   }
++   
++   interv_sc = "ShelterAll"
++   intervention_fred = filter(state_fred, intervention_name == interv_sc)
++   
++   job_seeds = unique(intervention_fred$seed) 
++   for(sd in 1:length(job_seeds)){
++     tmp_fred = filter(intervention_fred, seed == job_seeds[sd])
++     total_deaths_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$CF_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))])
++     total_symptomatic_infs_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$Cs_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))])
++     total_infs_through_413_over_scenarios[nn, sd, which(intervention_scenarios == interv_sc)] = sum(tmp_fred$C_mean[yday(as.Date('2020-02-01')):yday(as.Date(fit_date))])/ tmp_fred$N_mean[1]
++   }
++ }
+[1] "MI"
+[1] "IL"
+[1] "IN"
+[1] "WI"
+[1] "MN"
+[1] "OH"
+[1] "KY"
+> 
+> ##=========================================#
+> ## Cumulative death plot combined----------
+> ##=========================================#
+> cols = brewer.pal(n = 7, name='Dark2')
+> f = '../figures/report_figure_deaths_cumulative.jpeg'
+> jpeg(file = f, height = 3 , width = 7, res = 300, units = 'in')
+> 
+> inds_to_plot = c(1:length(states))
+> layout(matrix(1:2, nrow = 1))
+> par(mar = c(1,3,2,1), oma = c(1, 2, 0,0))
+> 
+> plot(-100, -100, xlim = c(0.5, length(states)+0.5), 
++      ylim = c(min(total_deaths_through_413_over_scenarios, na.rm = T),
++               max(total_deaths_over_scenarios, na.rm = T)),
++      las = 2, xaxt = 'n', xlab = '', ylab = '',cex.axis=0.8)
+> mtext(side = 2, "Deaths", line = 3.5)
+> mtext(side = 3, sprintf("Cumulative deaths through %s %d",as.character(month(as.Date(fit_date),label = T)), day(as.Date(fit_date))), line = 1)
+> axis(side = 1, at = inds_to_plot, labels = states,cex.axis=0.8)
+> for(ss in 1:length(states)){
++   
++   ii = 1
++   x_to_plot = inds_to_plot[ss]
++   
++   boxplot(x = total_deaths_through_413_over_scenarios[ss,,ii],
++           at = x_to_plot, add = T,
++           col = adjustcolor(cols[ss], alpha.f = 0.5),
++           outcol = cols[ss],
++           outpch = 16,
++           border = cols[ss],
++           medcol = cols[ss], 
++           pars = list(xaxt = 'n', yaxt = 'n', axes = F))
++   
++   tmp_data = filter(us_states, State == states[ss])
++   points(x = inds_to_plot[ss],
++          y = tmp_data$deaths[which(tmp_data$date == as.Date(fit_date))],
++          pch = 23, cex = 1.5, col = 'navy', bg= 'navy')
++ }
+> 
+> # FORECAST
+> plot(-100, -100, xlim = c(0.5, length(states)+0.5), 
++      ylim = c(min(total_deaths_over_scenarios, na.rm = T),
++               max(total_deaths_over_scenarios, na.rm = T)),
++      las = 2, xaxt = 'n', xlab = '', ylab = '', yaxt = 'n')
+> # mtext(side = 2, "Deaths", line = 5, cex = 0.75)
+> # mtext(side = 2, "(per 1,000 individuals)", line = 3.5, cex = 0.75)
+> mtext(side = 3, sprintf("Cumulative deaths through %s %d",as.character(month(as.Date(max_date),label = T)), day(as.Date(max_date))), line=1)
+> axis(side = 1, at = inds_to_plot, labels = states,cex.axis=0.8)
+> axis(side = 2, at = seq(0, 8000, length.out = 5), 
++      # labels = seq(0, 8000, length.out = 5) / 1e3, 
++      las = 1,cex.axis=0.8)
+> for(ss in 1:length(states)){
++     ii = 2
++     
++     x_to_plot = inds_to_plot[ss]
++           
++     boxplot(x = total_deaths_over_scenarios[ss,,ii],
++             at = x_to_plot, add = T,
++             col = adjustcolor(cols[ss], alpha.f = 0.5),
++             outcol = cols[ss],
++             outpch = 16,
++             border = cols[ss],
++             medcol = cols[ss], 
++             pars = list(xaxt = 'n', yaxt = 'n', axes = F))
++  
++ }
+> 
+> dev.off()
+null device 
+          1 
+> 
+> proc.time()
+   user  system elapsed 
+ 27.801   2.511  31.858 

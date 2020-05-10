@@ -11,6 +11,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(lubridate)
 
+args = (commandArgs(TRUE))
 ##===============================#
 ## Process output-------------
 ##===============================#
@@ -64,7 +65,7 @@ for(nn in 1:nrow(interventions_df)){
                   RR_low = quantile(RR_mean, probs = c(0.025)), RR_high = quantile(RR_mean, probs = c(0.975))) %>%
         ungroup()
 
-    plot(tmp_fred$Date, tmp_fred$RR_median, xaxs = "i", yaxs = "i", type = "l", lwd = 2, col = "#00000090",
+    plot(tmp_fred$Date, tmp_fred$RR_median, xaxs = "i", yaxs = "i", type = "l", lwd = 2, col = col_palette[nn],
          xlab = "", ylab = "", xlim = c(times_to_plot[1],times_to_plot[length(times_to_plot)]),
          ylim = c(0,6), xaxt = 'n', yaxt = 'n')
     mtext(side = 3, text = ss)
@@ -77,29 +78,10 @@ for(nn in 1:nrow(interventions_df)){
     polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
             y = c(tmp_fred$RR_high,
                     rev(tmp_fred$RR_low)),
-            border = adjustcolor('black', alpha.f = 0.7),
-            col = adjustcolor('black', alpha.f = 0.2))    
+            border = adjustcolor(col_palette[nn], alpha.f = 0.7),
+            col = adjustcolor(col_palette[nn], alpha.f = 0.2))    
     lines(tmp_fred$Date, tmp_fred$RR_median, lwd = 1.5, 
-          col = adjustcolor('black', alpha.f = 0.2)) 
-    
-    interv_sc = "Shelter_0"
-    intervention_fred = filter(state_fred, intervention_name == interv_sc) %>%
-        filter(Date >= times_to_plot[1], Date <= times_to_plot[length(times_to_plot)])
-
-    intervention_end = intervention_fred$shelter_in_place_duration_mean[1] + intervention_fred$shelter_in_place_delay_mean[1]
-    
-    
-    tmp_fred = intervention_fred %>%
-        group_by(Day, Date, start_date, school_closure_day, shelter_in_place_delay_mean) %>%
-        summarize(RR_median = quantile(RR_mean, probs = c(0.5)), RR_low = quantile(RR_mean, probs = c(0.025)), RR_high = quantile(RR_mean, probs = c(0.975))) %>%
-        ungroup()
-    
-    polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
-              y = c(tmp_fred$RR_high,
-                    rev(tmp_fred$RR_low)),
-            border = adjustcolor(col_palette[nn],alpha.f = 0.9),
-            col = adjustcolor(col_palette[nn],alpha.f = 0.5))
-    lines(tmp_fred$Date, tmp_fred$RR_median, lwd = 1.5, col = col_palette[nn]) 
+          col = adjustcolor(col_palette[nn], alpha.f = 0.2)) 
     
     axis(side = 1, at = x_inds, labels = xlab_str, las = 2)        
     abline(v = as.Date(intervention_fred$start_date[1] + intervention_end), col = "navy", lwd = 1.5)

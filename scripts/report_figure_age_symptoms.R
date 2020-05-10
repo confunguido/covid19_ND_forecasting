@@ -1,3 +1,4 @@
+args = (commandArgs(TRUE))
 age.dist.cases <- data.frame(ages=c(9,19,29,39,49,59,69,79,120), cases=c(416, 549, 3619, 7600, 8571, 10008, 8583, 3918, 1408))
 age.dist.china <- read.csv("../../data/China-2019.csv")
 age.dist.china$total <- age.dist.china$M+age.dist.china$F

@@ -10,6 +10,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(lubridate)
 
+args = (commandArgs(TRUE))
 ##===============================#
 ## Data from NYT or JHU------------
 ##===============================#

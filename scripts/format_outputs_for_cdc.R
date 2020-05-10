@@ -18,7 +18,7 @@ get_quantiles <- function(df_in, dd, p_in, var_in){
     return(tmp_quantile)
 }
 
-submission_date = "2020-05-04"
+submission_date = "2020-05-11"
 args = (commandArgs(TRUE))
 if(length(args) >= 1){
     submission_date = args[1]
@@ -77,7 +77,7 @@ for(tt in 1:length(target_str)){
         print(ss)
         st_intervention_tmp = filter(interventions_df, State == ss)
         
-        for(interv_sc in c("ShelterAll", "Shelter_0")){
+        for(interv_sc in c("ShelterAll")){
             state_fred = filter(fred_sweep_df, intervention_name == interv_sc, state_name == ss, Date > last_week_date) %>%
                 mutate(var_out = !!sym(var_list[tt]),
                        Week = as.numeric(floor((Date - min(Date))/7)))

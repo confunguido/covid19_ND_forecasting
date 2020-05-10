@@ -19,6 +19,7 @@ shelter_ts <- function(data_in, dates_in, lm_in){
     return(shelter_out)
 }
 
+args = (commandArgs(TRUE))
 ##===============================#
 ## Read data-------------
 ##===============================#
@@ -106,7 +107,6 @@ for(ss in 1:nrow(interventions_df)){
     fit_rate_lm = lm(trend_mobility ~ day, data = tmp_data)
     ct_growth_rate = fit_rate_lm$coefficients['day']
     trend_pred = as.numeric(predict(fit_rate_lm))
-    interventions_df$early_rate[ss] = ct_growth_rate / (max(trend_pred) - min(trend_pred))
 
     ylimits =  c(-5,33)
     plot(tmp_data_base$date, tmp_data_base$trend_mobility, type = "l", col = col_palette[ss], main = "", ylab = "",xlab = "", xaxs = "i", yaxs ="i", lwd = 3, xlim = c(times_to_plot[1],times_to_plot[length(times_to_plot)]), ylim =ylimits,xaxt = 'n', las = 2, yaxt = "n")

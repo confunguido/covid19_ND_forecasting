@@ -9,6 +9,7 @@ library(dplyr)
 library(tidyverse)
 library(RColorBrewer)
 
+args = (commandArgs(TRUE))
 ##===============================#
 ## Process output-------------
 ##===============================#

@@ -11,6 +11,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(lubridate)
 
+args = (commandArgs(TRUE))
 ##===============================#
 ## Data from NYT or JHU------------
 ##===============================#
@@ -86,7 +87,7 @@ for(nn in 1:nrow(interventions_df)){
     state_fred = filter(fred_sweep_df, state_name == ss)   
     interv_sc = "ShelterAll"
     intervention_fred = filter(state_fred, intervention_name == interv_sc )
-    intervention_end = intervention_fred$shelter_in_place_duration_mean[1] + intervention_fred$shelter_in_place_delay_mean[1]
+    intervention_end = as.Date(st_intervention_tmp$end_shelter_date[1])
     
     tmp_fred = intervention_fred %>%
         group_by(Day, Date, start_date, school_closure_day, shelter_in_place_delay_mean) %>%
@@ -98,7 +99,7 @@ for(nn in 1:nrow(interventions_df)){
                   AR_median = quantile(AR_mean, probs = c(0.5))) %>%
         ungroup()
 
-    plot(tmp_fred$Date, tmp_fred$CF_median, xaxs = "i", yaxs = "i", type = "l", lwd = 2, col = "#00000090",
+    plot(tmp_fred$Date, tmp_fred$CF_median, xaxs = "i", yaxs = "i", type = "l", lwd = 2, col = col_palette[nn],
          xlab = "", ylab = "", xlim = c(times_to_plot[1],times_to_plot[length(times_to_plot)]),
          ylim = c(0,max(intervention_fred$CF_mean)), xaxt = 'n', yaxt = 'n')
     mtext(side = 3, text = ss)
@@ -111,35 +112,16 @@ for(nn in 1:nrow(interventions_df)){
     polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
             y = c(tmp_fred$CF_high,
                     rev(tmp_fred$CF_low)),
-            border = adjustcolor('black', alpha.f = 0.7),
-            col = adjustcolor('black', alpha.f = 0.2))    
+            border = adjustcolor(col_palette[nn], alpha.f = 0.7),
+            col = adjustcolor(col_palette[nn], alpha.f = 0.2))    
     lines(tmp_fred$Date, tmp_fred$CF_median, lwd = 1.5, 
-          col = adjustcolor('black', alpha.f = 0.2)) 
+          col = adjustcolor(col_palette[nn], alpha.f = 0.2)) 
 
     tmp_data_fit = filter(fit_data, State == ss)
     tmp_fred_data = filter(tmp_fred, Date <= max(tmp_data_fit$date))
     
-    interv_sc = "Shelter_0"
-    intervention_fred = filter(state_fred, intervention_name == interv_sc) %>%
-        filter(Date >= times_to_plot[1], Date <= times_to_plot[length(times_to_plot)])
-
-    intervention_end = intervention_fred$shelter_in_place_duration_mean[1] + intervention_fred$shelter_in_place_delay_mean[1]
-    
-    
-    tmp_fred = intervention_fred %>%
-        group_by(Day, Date, start_date, school_closure_day, shelter_in_place_delay_mean) %>%
-        summarize(CF_median = quantile(CF_mean, probs = c(0.5)), CF_low = quantile(CF_mean, probs = c(0.025)), CF_high = quantile(CF_mean, probs = c(0.975))) %>%
-        ungroup()
-    
-    polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
-              y = c(tmp_fred$CF_high,
-                    rev(tmp_fred$CF_low)),
-            border = adjustcolor(col_palette[nn],alpha.f = 0.9),
-            col = adjustcolor(col_palette[nn],alpha.f = 0.5))
-    lines(tmp_fred$Date, tmp_fred$CF_median, lwd = 1.5, col = col_palette[nn]) 
-    
     axis(side = 1, at = x_inds, labels = xlab_str, las = 2)        
-    abline(v = as.Date(intervention_fred$start_date[1] + intervention_end), col = "navy", lwd = 1.5)
+    abline(v = intervention_end, col = "navy", lwd = 1.5)
     
     tmp_data = filter(us_states, State == ss,date > tmp_data_fit$date[nrow(tmp_data_fit)], date < as.Date(Sys.Date()))
     points(tmp_data$date, tmp_data$deaths_inc, col = "navy", lwd = 0.3, pch = 9, cex = 0.8)

@@ -9,7 +9,7 @@ all: report forecasts
 CURRENT_DIR := $(shell pwd)
 
 forecast_max_date = 2020-06-15
-forecast_date = 2020-05-04
+forecast_date = 2020-05-11
 
 SRC_DIR = ./scripts
 DATA_DIR = ../experiments/Midwest_simulations/output/SHORT_FORECAST
@@ -26,11 +26,14 @@ BIB_FILE := $(TEX_MASTER).bib
 ## Data  ---------------------
 ##=========================================================#
 FRED_FILES := $(wildcard $(DATA_DIR)/FRED*short_forecast_asymp_out/*.csv) 
-DATA_FILES = $(wildcard ../../data/US_states_covid*.csv)
+DATA_FILES := $(wildcard ../data/US_states_covid*.csv)
 SRC_FILES := $(SRC_DIR)/download_covid_data.R
 DATA_OUT := $(SRC_FILES:.R=.Rout)
 
 data: $(DATA_OUT)
+
+$(SRC_DIR)/download_covid_data.Rout: $(SRC_DIR)/download_covid_data.R
+	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F))
 
 ##========================================================#
 ## Figures ---------------------
@@ -46,8 +49,8 @@ FIG_FILES := $(FIGS_DIR)/report_figure_shelter_patterns.jpeg \
 
 figs: $(FIG_FILES) 
 
-$(FIGS_DIR)/report_figure_%.jpeg: $(SRC_DIR)/report_figure_%.R  $(FRED_FILES)
-	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F) ${forecast_max_date})
+$(FIGS_DIR)/report_figure_%.jpeg: $(SRC_DIR)/report_figure_%.R  $(FRED_FILES) $(DATA_OUT)
+	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F) ${forecast_max_date};rm ${forecast_max_date})
 
 ##========================================================#
 ## Report ---------------------

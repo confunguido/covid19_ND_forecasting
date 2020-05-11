@@ -29,10 +29,12 @@ FRED_FILES := $(wildcard $(DATA_DIR)/FRED*short_forecast_asymp_out/*.csv)
 DATA_FILES := $(wildcard ../data/US_states_covid*.csv)
 SRC_FILES := $(SRC_DIR)/download_covid_data.R
 DATA_OUT := $(SRC_FILES:.R=.Rout)
+date_file = $(SRC_DIR)/last_updated.txt
+update_flag := $(shell $(SRC_DIR)/update_date.sh $(date_file))
 
 data: $(DATA_OUT)
 
-$(SRC_DIR)/download_covid_data.Rout: $(SRC_DIR)/download_covid_data.R
+$(SRC_DIR)/download_covid_data.Rout: $(SRC_DIR)/download_covid_data.R $(date_file)
 	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F))
 
 ##========================================================#

@@ -69,7 +69,7 @@ for(nn in 1:nrow(interventions_df)){
 ## TEMPORARY!! Fix ASAP
 fred_sweep_df = fred_sweep_df %>%
     group_by(job_id,state_name) %>%
-    mutate(CumCF = cumsum(CF_mean), N_sheltering_mean = H_sheltering_mean * 2.81) %>%
+    mutate(CumCF = cumsum(CF_mean)) %>%
     ungroup()
 
 

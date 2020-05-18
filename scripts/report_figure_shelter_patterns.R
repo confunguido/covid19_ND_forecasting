@@ -66,7 +66,6 @@ for(nn in 1:nrow(interventions_df)){
     params_sweep_df = bind_rows(params_sweep_df,params_df)
 }
 
-## TEMPORARY!! Fix ASAP
 fred_sweep_df = fred_sweep_df %>%
     group_by(job_id,state_name) %>%
     mutate(CumCF = cumsum(CF_mean)) %>%

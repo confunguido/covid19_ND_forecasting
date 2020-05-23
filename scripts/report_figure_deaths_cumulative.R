@@ -91,7 +91,7 @@ yearSunday <- function(year) {
 fit_date = max(fit_data$date)
 intervention_scenarios = c('ShelterAll')
 CF_fit = fred_sweep_df %>% group_by(intervention_name, state_name, seed) %>% filter(Date < fit_date) %>% summarize(CF_mean = sum(CF_mean, na.rm = T)) %>% ungroup() %>% filter(intervention_name %in% intervention_scenarios)
-CF_forecast = fred_sweep_df %>% group_by(intervention_name, state_name, seed) %>% filter(Date < max_date) %>% summarize(CF_mean = sum(CF_mean, na.rm = T)) %>% ungroup() %>% filter(intervention_name %in% intervention_scenarios)
+CF_forecast = fred_sweep_df %>% group_by(intervention_name, state_name, seed) %>% filter(Date < max_date, Date >= fit_date) %>% summarize(CF_mean = sum(CF_mean, na.rm = T)) %>% ungroup() %>% filter(intervention_name %in% intervention_scenarios)
 
 # number of reps
 num_reps = 500
@@ -106,11 +106,11 @@ jpeg(file = f, height = 3 , width = 7, res = 300, units = 'in')
 
 inds_to_plot = c(1:length(states))
 layout(matrix(1:2, nrow = 1))
-par(mar = c(1,3,2,1), oma = c(1, 2, 0,0))
+par(mar = c(1,3,2,1), oma = c(1, 2, 2,0))
 
 plot(-100, -100, xlim = c(0.5, length(states)+0.5), 
-     ylim = c(min(CF_fit$CF_mean, na.rm = T),
-              max(CF_forecast$CF_mean, na.rm = T)),
+     ylim = c(min(min(CF_fit$CF_mean, na.rm = T), min(CF_forecast$CF_mean, na.rm = T), na.rm = T),
+              max(max(CF_fit$CF_mean, na.rm = T), max(CF_forecast$CF_mean, na.rm = T), na.rm = T)),
      las = 2, xaxt = 'n', xlab = '', ylab = '',cex.axis=0.8)
 mtext(side = 2, "Deaths", line = 3.5)
 mtext(side = 3, sprintf("Cumulative deaths through %s %d",as.character(month(as.Date(fit_date),label = T)), day(as.Date(fit_date))), line = 1)
@@ -141,7 +141,9 @@ plot(-100, -100, xlim = c(0.5, length(states)+0.5),
      las = 2, xaxt = 'n', xlab = '', ylab = '', yaxt = 'n')
 
 
-mtext(side = 3, sprintf("Cumulative deaths through %s %d",as.character(month(as.Date(max_date),label = T)), day(as.Date(max_date))), line=1)
+mtext(side = 3, sprintf("Cumulative deaths from %s %d\n through %s %d",
+                        as.character(month(as.Date(fit_date),label = T)), day(as.Date(fit_date)),
+                        as.character(month(as.Date(max_date),label = T)), day(as.Date(max_date))), line=1)
 axis(side = 1, at = inds_to_plot, labels = states,cex.axis=0.8)
 axis(2,las = 2, cex.axis = 0.8)
 ## axis(side = 2, at = seq(0, max(CF_forecast$CF_mean), length.out = 5), 

@@ -18,6 +18,7 @@ if(length(args) >= 1){
     max_date = args[1]
 }
 max_date = as.Date(max_date)
+print(max_date)
 ##===============================#
 ## Data from NYT or JHU------------
 ##===============================#

@@ -11,7 +11,13 @@ library(tidyverse)
 library(RColorBrewer)
 library(lubridate)
 
+forecast_date = as.Date("2020-06-15")
 args = (commandArgs(TRUE))
+if(length(args) >= 1){
+    forecast_date = as.Date(args[1])
+}
+print(forecast_date)
+
 ##===============================#
 ## Data from NYT or JHU------------
 ##===============================#
@@ -88,7 +94,7 @@ par(mar = c(3,2,3,1), oma = c(4,4,0,1))
 layout(matrix(c(1,1,2,2,3,3,4,4,8,5,5,6,6,7,7,8),nrow = 2, byrow = T))
 ##layout(matrix(c(1,1,2,2,3,3),nrow = 1, byrow = T))
 particles_sampled_df = tibble()
-times_to_plot = seq(from=as.Date('2020-02-06'),to=as.Date('2020-06-15'), by = 1)
+times_to_plot = seq(from=as.Date('2020-02-06'),to=forecast_date, by = 1)
 x_inds = seq(from=times_to_plot[1],to=times_to_plot[length(times_to_plot)],length.out = 8)
 xlab_str = gsub(" +", " ", format(x_inds, "%b %e"))
 sens = 0.777; spec = 1.0

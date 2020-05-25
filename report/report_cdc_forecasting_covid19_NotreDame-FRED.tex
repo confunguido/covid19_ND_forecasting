@@ -80,12 +80,18 @@ We calibrated five parameters: transmission probability, magnitude of importatio
 
 We simulated 500 combinations of these three parameters with five replicates for each set of values using the sobol function in pomp. For each state, we then calculated the probability of the reported deaths given each parameter combination for assuming that deaths follow a negative binomial distribution. For each day, we estimated the probability of the proportion of positive tests in the data given a binomial distribution based on the probability of testing positive in the model. 
 
-Our model output for daily deaths and cumulative number of deaths through the calibration period closely matched the data to which it was fitted (Figures \ref{fig_deaths_cumulative}, \ref{fig_deaths_forecast}). Additionally, our model was able to accurately reproduce daily deaths outside of the timeframe to which we calibrated the model (Figure \ref{fig_deaths_forecast}). We also show estimates of the reproduction number in each of these states in figure \ref{fig_reproduction_number}. 
+The model captures the trends on the proportion of positive tests (Figure \ref{fig_pos_testing}). Also, our model output for daily deaths and cumulative number of deaths through the calibration period closely matched the data to which it was fitted (Figures \ref{fig_deaths_cumulative}, \ref{fig_deaths_forecast}). Additionally, our model was able to accurately reproduce daily deaths outside of the timeframe to which we calibrated the model (Figure \ref{fig_deaths_forecast}). We also show estimates of the reproduction number in each of these states in figure \ref{fig_reproduction_number}. 
 
 \begin{figure}[hb!]
 \centering
 \includegraphics[width=\textwidth]{../figures/report_figure_shelter_patterns.jpeg} 
 \caption{\label{fig_google_shelter} Changes in mobility patterns. Black line shows the fitted pattern in mobility to residential locations. Adherence to shelter-in-place then follows the same trend, but with the final magnitude in adherence calibrated by state to data on deaths. Colored lines represent the change in baseline mobility patterns according to the mobility reports from google.}
+\end{figure}
+
+\begin{figure}[hb!]
+\centering
+\includegraphics[width=\textwidth]{../figures/report_figure_positive_tests.jpeg} 
+\caption{\label{fig_deaths_forecast} Proportion of positive tests in six states. The colored lines represent each state. Black diamonds show the data used to fit the model, while empty diamonds show the recent data not used in the fitting process. Navy dashed line shows the time of schools closure and the dotted navy line shows the time of shelter-in-place orders.}
 \end{figure}
 
 
@@ -98,7 +104,7 @@ Our model captured the overall dynamics of the daily number of deaths reported f
 \begin{figure}[hb!]
 \centering
 \includegraphics[width=\textwidth]{../figures/report_figure_deaths_forecast.jpeg} 
-\caption{\label{fig_deaths_forecast} Projected daily deaths under two assumptions of shelter in place. The colored lines represent a scenario where shelter-in-place compliance is maintained until the end of the simulation. Black diamonds show the data used to fit the model, while empty diamonds show the recent data not used in the fitting process. Navy dashed line shows the time of schools closure and the dotted navy line shows the time of shelter-in-place orders.}
+\caption{\label{fig_deaths_forecast} Projected daily deaths under two assumptions of shelter in place. The colored lines represent each state. Black diamonds show the data used to fit the model, while empty diamonds show the recent data not used in the fitting process. Navy dashed line shows the time of schools closure and the dotted navy line shows the time of shelter-in-place orders.}
 \end{figure}
 
 \begin{figure}[hb!]
@@ -111,9 +117,8 @@ Our model captured the overall dynamics of the daily number of deaths reported f
 \begin{figure}[hb!]
 \centering
 \includegraphics[width=\textwidth]{../figures/report_figure_reproduction_number.jpeg} 
-\caption{\label{fig_reproduction_number} Estimated and projected reproduction number for six states in the Midwest. Gray bands show a scenario where stay-at-home orders remain. Color bands show a scenario where stay-at-home orders are lifted at a specific date denoted by the solid navy line.}
+\caption{\label{fig_reproduction_number} Estimated and projected reproduction number for six states in the Midwest. Gray bands show a scenario where stay-at-home orders remain.}
 \end{figure}
-
 
 
 

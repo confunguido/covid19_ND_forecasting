@@ -8,8 +8,8 @@ all: report forecasts
 
 CURRENT_DIR := $(shell pwd)
 
-forecast_max_date = 2020-07-03
-forecast_date = 2020-05-22
+forecast_max_date = 2020-07-10
+forecast_date = 2020-05-25
 
 SRC_DIR = ./scripts
 DATA_DIR = ../experiments/Midwest_simulations/output/SHORT_FORECAST
@@ -47,12 +47,13 @@ FIG_FILES := $(FIGS_DIR)/report_figure_shelter_patterns.jpeg \
 	$(FIGS_DIR)/report_figure_reproduction_number.jpeg\
 	$(FIGS_DIR)/report_figure_parameter_periods.jpeg\
 	$(FIGS_DIR)/report_figure_age_CFR.jpeg\
-	$(FIGS_DIR)/report_figure_age_symptoms.jpeg
+	$(FIGS_DIR)/report_figure_age_symptoms.jpeg\
+	$(FIGS_DIR)/report_figure_positive_tests.jpeg
 
 figs: $(FIG_FILES) 
 
 $(FIGS_DIR)/report_figure_%.jpeg: $(SRC_DIR)/report_figure_%.R  $(FRED_FILES) $(DATA_OUT)
-	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F) ${forecast_max_date};rm ${forecast_max_date})
+	(cd $(SRC_DIR); Rscript $(<F) ${forecast_max_date})
 
 ##========================================================#
 ## Report ---------------------
@@ -75,7 +76,7 @@ $(PDF_DIR)/$(TEX_MASTER).pdf: $(PDF_DIR)/$(TEX_MASTER).tex $(PDF_DIR)/$(BIB_FILE
 forecasts: $(OUT_DIR)/$(forecast_date)-NotreDame-FRED.csv
 
 $(OUT_DIR)/$(forecast_date)-NotreDame-FRED.csv: $(SRC_DIR)/format_outputs_for_cdc.R $(FRED_FILES)
-	(cd $(SRC_DIR); R CMD BATCH --no-save $(<F) $(forecast_date))
+	(cd $(SRC_DIR); Rscript $(<F) $(forecast_date))
 
 ##========================================================#
 ## Clean stuff-----------------------

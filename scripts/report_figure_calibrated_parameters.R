@@ -53,7 +53,7 @@ fred_sweep_df = fred_sweep_df %>% group_by(seed,state_name) %>% mutate(CumCF = c
 ##===============================
 col_palette = brewer.pal(n = 7, name='Dark2')
 jpeg('../figures/report_figure_calibrated_parameters.jpeg', width=7,height=5, units = "in", res = 300)
-layout(matrix(c(1,1,2,2,3,3,6,4,4,5,5,6),nrow = 2, byrow = T))
+layout(matrix(c(1,1,2,2,3,3,4,4),nrow = 2, byrow = T))
 par(mar = c(1,3,3,2), oma = c(1,4,0,1))
 particles_sampled_df = tibble()
 
@@ -63,9 +63,7 @@ state_fred = fred_sweep_df %>%
               shelter_in_place_compliance = mean(shelter_in_place_compliance),
               influenza_transmissibility = mean(influenza_transmissibility),
               imports_factor = mean(imports_factor),
-              influenza_asymp_infectivity = mean(influenza_asymp_infectivity),
-              tests_ratio = mean(tests_ratio)
-              ) %>%
+              influenza_asymp_infectivity = mean(influenza_asymp_infectivity)) %>%
         ungroup()%>%
     filter(intervention_name %in% c("ShelterAll"))
 
@@ -152,27 +150,6 @@ for(nn in 1:nrow(interventions_df)){
             pars = list(xaxt = 'n', yaxt = 'n', axes = F), lwd = 1)
     print(quantile(shelter_data, probs=c(0.025,0.5,0.975)))        
 }
-
-plot(-100, -100, xlim = c(0.5, nrow(interventions_df) + 0.5), 
-     ylim = c(min(state_fred$tests_ratio, na.rm = T),
-              max(state_fred$tests_ratio, na.rm = T)),
-     las = 2, xaxt = 'n', xlab = '', ylab = '', cex = 0.5)
-mtext(side = 2, "Adjustment parameter for testing", line = 3, cex = 0.7)
-axis(side = 1, at = 1:nrow(interventions_df), labels = interventions_df$State, cex.axis = 0.6)
-for(nn in 1:nrow(interventions_df)){
-    print(sprintf("Ratio %s",interventions_df$State[nn]))
-    shelter_data = filter(state_fred, state_name == interventions_df$State[nn]) %>% pull(tests_ratio)
-    boxplot(x = shelter_data,
-            at = nn, add = T,
-            col = sprintf("%s80",col_palette[nn]),
-            outcol = col_palette[nn],
-            outpch = 16,
-            border = col_palette[nn],
-            medcol = col_palette[nn],
-            pars = list(xaxt = 'n', yaxt = 'n', axes = F), lwd = 1)
-    print(quantile(shelter_data, probs=c(0.025,0.5,0.975)))        
-}
-
 mtext("Calibrated parameters", side = 3, outer = T, line = -2)
 
 dev.off()

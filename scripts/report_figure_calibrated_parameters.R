@@ -15,7 +15,8 @@ args = (commandArgs(TRUE))
 ## Data from NYT or JHU------------
 ##===============================#
 interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>%
-    filter(State != 'NY')
+    filter(State != "NY", State != "PA")
+
 
 fit_data = read_csv('../../experiments/Midwest_simulations/output/CALIBRATION/US_states_covid_data.csv') %>%
     filter(state %in% interventions_df$state_name) %>%

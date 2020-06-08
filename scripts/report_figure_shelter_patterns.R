@@ -26,7 +26,8 @@ if(length(args) >= 1){
 ##===============================#
 ## Read data-------------
 ##===============================#
-interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') 
+interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv')  %>%
+    filter(State != "NY", State != "PA")
 
 ## Update file
 download.file('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv?cachebust=911a386b6c9c230f',

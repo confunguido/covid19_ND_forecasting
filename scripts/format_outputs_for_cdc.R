@@ -18,7 +18,7 @@ get_quantiles <- function(df_in, dd, p_in, var_in){
     return(tmp_quantile)
 }
 
-submission_date = "2020-05-11"
+submission_date = "2020-06-08"
 args = (commandArgs(TRUE))
 if(length(args) >= 1){
     submission_date = args[1]
@@ -31,7 +31,7 @@ print(max_forecast_date)
 ##===============================#
 ## Interventions data------------
 ##===============================#
-interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>% filter(State != "NY")
+interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>% filter(State != "NY", State != "PA")
 
 ##===============================#
 ## Process output-------------
@@ -53,7 +53,25 @@ for(nn in 1:nrow(interventions_df)){
     params_sweep_df = bind_rows(params_sweep_df,params_df)
 }
 
-fred_sweep_df = fred_sweep_df %>% group_by(seed,state_name) %>% mutate(CumCF = cumsum(CF_mean)) %>% ungroup()
+
+fit_data = read_csv('../../experiments/Midwest_simulations/output/CALIBRATION/US_states_covid_data.csv') %>%
+    filter(state %in% interventions_df$state_name) %>%
+    left_join(interventions_df, by = c("state" =  "state_name")) %>%
+    group_by(State) %>%
+    mutate(cases_inc = c(cases[1], diff(cases)),
+           deaths_inc = c(deaths[1], diff(deaths))) %>%
+    ungroup() %>%
+    arrange(date)
+
+
+## Only do cumulative deaths after the maximum fitting date
+fred_sweep_df = fred_sweep_df %>%
+    left_join(dplyr::select(fit_data, c("State", "date", "deaths_inc")), by = c("state_name" = "State", "Date" = "date")) %>%
+    mutate(CF_postfit = ifelse(Date <= max(fit_data$date), deaths_inc, CF_mean))%>%
+    replace_na(list(CF_postfit = 0)) %>%
+    group_by(seed,state_name) %>% arrange(Date) %>%
+    mutate(CumCF = cumsum(CF_postfit)) %>% ungroup() 
+    
 
 ##===============================#
 ## INC  Deaths by state --------
@@ -63,7 +81,6 @@ fips_codes = read_csv('fips_codes.csv')
 fips = fips_codes %>%
   dplyr::select(state, state_code, state_name) %>%
   unique()
-
 
 p_quantiles = c(0.01, 0.025, seq(0.05, 0.95, by = 0.05), 0.975, 0.99)
 target_str = c("inc death", "cum death")
@@ -107,8 +124,7 @@ for(tt in 1:length(target_str)){
                            "%d wk ahead %s",
                            floor(as.integer(Date - min(Date))/7)+1, target_str[tt]))
             
-            cdc_formatted_df = bind_rows(cdc_formatted_df, tmp_df, week_tmp_df)
-            
+            cdc_formatted_df = bind_rows(cdc_formatted_df, tmp_df, week_tmp_df)            
         }
     }      
 }
@@ -124,7 +140,7 @@ model_predictions_out = cdc_formatted_df %>%
     mutate(forecast_date = submission_date, type = "quantile") %>%
     left_join(fips, by = c("location_name_abbr" = "state")) %>%    
     rename(location = state_code, location_name = state_name) %>%
-    select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
+    dplyr::select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
 
 point_estimate_out = filter(model_predictions_out, quantile == 0.5) %>%
     mutate(type = "point", quantile = NA)
@@ -136,4 +152,20 @@ model_predictions_out = bind_rows(model_predictions_out, point_estimate_out) %>%
 ## Group by epi week --------
 ##===============================#
 write_csv(model_predictions_out, sprintf('../output/%s-NotreDame-FRED.csv',submission_date))
+
+
+### For alex-----------------
+test_df = read_csv('../output/2020-06-01-NotreDame-FRED.csv')
+load('./forecast_states_20200601.RData')
+
+df.forecast = dplyr::select(df.forecast, -location) %>%
+    mutate(location_name = as.character(location_name))
+fips_codes = read_csv('fips_codes.csv')
+fips = fips_codes %>%
+    dplyr::select( state_code, state_name) %>%
+    rename(location = state_code, location_name = state_name) %>%
+    unique()
+
+formatted_df = left_join(df.forecast, fips, by = "location_name") %>%
+    dplyr::select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
 

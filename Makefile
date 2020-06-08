@@ -9,7 +9,7 @@ all: report forecasts
 CURRENT_DIR := $(shell pwd)
 
 forecast_max_date = 2020-07-21
-forecast_date = 2020-06-01
+forecast_date = 2020-06-08
 
 SRC_DIR = ./scripts
 DATA_DIR = ../experiments/Midwest_simulations/output/SHORT_FORECAST

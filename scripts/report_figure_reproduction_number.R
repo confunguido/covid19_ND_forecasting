@@ -22,7 +22,8 @@ print(forecast_date)
 ## Process output-------------
 ##===============================#
 interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>%
-    filter(State != 'NY')
+    filter(State != "NY", State != "PA")
+
 
 outdir = '../../experiments/Midwest_simulations/output/SHORT_FORECAST'
 fred_sweep_df = tibble()

@@ -22,7 +22,7 @@ print(forecast_date)
 ## Data from NYT or JHU------------
 ##===============================#
 interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>%
-    filter(State != 'NY')
+    filter(State != "NY", State != "PA")
 
 data_source = "JHU"
 data_sys = system(sprintf("Rscript ./download_covid_data.R %s", data_source), intern = TRUE)
@@ -101,6 +101,8 @@ for(nn in 1:nrow(interventions_df)){
         summarize(CF_median = quantile(CF_mean, probs = c(0.5), na.rm = T),
                   CF_low = quantile(CF_mean, probs = c(0.025), na.rm =T),
                   CF_high = quantile(CF_mean, probs = c(0.975), na.rm = T),
+                  CF_IQRlow = quantile(CF_mean, probs = c(0.25), na.rm =T),
+                  CF_IQRhigh = quantile(CF_mean, probs = c(0.75), na.rm = T),                  
                   Cs_median = quantile(Cs_mean, probs = c(0.5)),
                   Cs_low = quantile(Cs_mean, probs = c(0.025)), Cs_high = quantile(CF_mean, probs = c(0.975)),
                   AR_low = quantile(AR_mean, probs = c(0.025)), AR_high = quantile(AR_mean, probs = c(0.975)),
@@ -124,6 +126,12 @@ for(nn in 1:nrow(interventions_df)){
             col = adjustcolor(col_palette[nn], alpha.f = 0.2))    
     lines(tmp_fred$Date, tmp_fred$CF_median, lwd = 1.5, 
           col = adjustcolor(col_palette[nn], alpha.f = 0.2)) 
+
+    polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
+            y = c(tmp_fred$CF_IQRhigh,
+                    rev(tmp_fred$CF_IQRlow)),
+            border = adjustcolor(col_palette[nn], alpha.f = 0.7),
+            col = adjustcolor(col_palette[nn], alpha.f = 0.2))    
 
     tmp_data_fit = filter(fit_data, State == ss)
     tmp_fred_data = filter(tmp_fred, Date <= max(tmp_data_fit$date))

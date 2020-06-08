@@ -23,7 +23,7 @@ print(max_date)
 ## Data from NYT or JHU------------
 ##===============================#
 interventions_df = read_csv('../../experiments/input_files/interventions_covid_timeseries.csv') %>%
-    filter(State != 'NY')
+    filter(State != "NY", State != "PA")
 
 data_source = "JHU"
 data_sys = system(sprintf("Rscript ./download_covid_data.R %s", data_source), intern = TRUE)

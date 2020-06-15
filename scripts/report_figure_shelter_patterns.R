@@ -40,7 +40,7 @@ if(!file.exists('../../data/USA_google_movement_data.csv')){
 google_data = read_csv('../../data/USA_google_movement_data.csv') %>%
     filter(sub_region_1 %in% interventions_df$state_name) %>%
     mutate(day = as.numeric(date - min(date))) %>%
-    dplyr::select(-c(country_region_code, country_region, sub_region_2, day))%>%
+    dplyr::select(ends_with('baseline'), date, sub_region_1) %>%   
     tidyr::gather(key = category, value = trend_mobility, -c('sub_region_1', 'date'))
 
 ct = "residential_percent_change_from_baseline"

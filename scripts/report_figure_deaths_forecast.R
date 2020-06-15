@@ -130,7 +130,7 @@ for(nn in 1:nrow(interventions_df)){
     polygon(x = c(tmp_fred$Date, rev(tmp_fred$Date)),
             y = c(tmp_fred$CF_IQRhigh,
                     rev(tmp_fred$CF_IQRlow)),
-            border = adjustcolor(col_palette[nn], alpha.f = 0.7),
+            border = adjustcolor(col_palette[nn], alpha.f = 0.3),
             col = adjustcolor(col_palette[nn], alpha.f = 0.2))    
 
     tmp_data_fit = filter(fit_data, State == ss)

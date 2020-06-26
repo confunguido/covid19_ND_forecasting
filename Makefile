@@ -7,6 +7,7 @@ all: report forecasts
 .PHONY: clean cleanJunk 
 
 CURRENT_DIR := $(shell pwd)
+PANDOC_NUM_DIR := ~/pandoc_tex_nos
 
 forecast_max_date = 2020-08-08
 forecast_date = 2020-06-22
@@ -21,6 +22,12 @@ OUT_DIR = ./output
 TEX_MASTER := report_cdc_forecasting_covid19_NotreDame-FRED
 PDF_FILES := $(PDF_DIR)/$(TEX_MASTER).pdf
 BIB_FILE := $(TEX_MASTER).bib
+DOC_REF := template_report_word.docx
+
+EQ_FILTER := $(PANDOC_NUM_DIR)/pandoc_eqnos_tex.py
+TBL_FILTER := $(PANDOC_NUM_DIR)/pandoc_tablenos_tex.py
+FIG_FILTER := $(PANDOC_NUM_DIR)/pandoc_fignos_tex.py
+CLEAN_FILTER := $(PANDOC_NUM_DIR)/pandoc_clean_tex.py
 
 ##=========================================================#
 ## Data  ---------------------
@@ -57,7 +64,9 @@ $(FIGS_DIR)/report_figure_%.jpeg: $(SRC_DIR)/report_figure_%.R  $(FRED_FILES) $(
 ##========================================================#
 ## Report ---------------------
 ##========================================================#
-report: $(PDF_FILES) 
+report: $(PDF_FILES) $(PDF_DIR)/$(TEX_MASTER).docx
+
+PANDOC_FLAGS :=  --csl ~/Dropbox/Literature/style_files/plos-computational-biology.csl	--reference-doc $(DOC_REF) --mathml --bibliography=$(BIB_FILE) --filter $(CLEAN_FILTER) --filter $(EQ_FILTER) --filter $(TBL_FILTER) --filter $(FIG_FILTER) -M reference-section-title=References
 
 junk_files_report = *.log *.out *.blg *.aux *.toc auto *.bbl *.bcf *.run.xml
 $(PDF_DIR)/$(TEX_MASTER).pdf: $(PDF_DIR)/$(TEX_MASTER).tex $(PDF_DIR)/$(BIB_FILE) $(FIG_FILES)
@@ -68,6 +77,9 @@ $(PDF_DIR)/$(TEX_MASTER).pdf: $(PDF_DIR)/$(TEX_MASTER).tex $(PDF_DIR)/$(BIB_FILE
 	pdflatex $(TEX_MASTER);\
 	pdflatex $(TEX_MASTER);\
 	rm -rfv $(junk_files_report); rm -rfv *.bbl)
+
+$(PDF_DIR)/$(TEX_MASTER).docx: $(PDF_DIR)/$(TEX_MASTER).tex $(PDF_DIR)/$(TEX_MASTER).pdf $(PDF_DIR)/$(DOC_REF)
+	(cd $(PDF_DIR); pandoc $(<F) -o $(@F) $(PANDOC_FLAGS))
 
 ##========================================================#
 ## Forecasts----------------

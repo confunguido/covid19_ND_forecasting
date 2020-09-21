@@ -2,6 +2,8 @@
 ## Author: Guido España
 ## Create report for CDC forecasting challenge
 ## https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork
+## Restore git files:
+## https://stackoverflow.com/questions/953481/find-and-restore-a-deleted-file-in-a-git-repository?rq=1
 ##=========================================================#
 all: report forecasts
 .PHONY: clean cleanJunk 
@@ -9,8 +11,8 @@ all: report forecasts
 CURRENT_DIR := $(shell pwd)
 PANDOC_NUM_DIR := ~/pandoc_tex_nos
 
-forecast_max_date = 2020-08-08
-forecast_date = 2020-06-22
+forecast_max_date = 2020-10-19
+forecast_date = 2020-09-21
 
 SRC_DIR = ./scripts
 DATA_DIR = ../experiments/Midwest_simulations/output/SHORT_FORECAST

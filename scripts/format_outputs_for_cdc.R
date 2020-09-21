@@ -124,7 +124,7 @@ for(tt in 1:length(target_str)){
                            "%d wk ahead %s",
                            floor(as.integer(Date - min(Date))/7)+1, target_str[tt]))
             
-            cdc_formatted_df = bind_rows(cdc_formatted_df, tmp_df, week_tmp_df)            
+            cdc_formatted_df = bind_rows(cdc_formatted_df, week_tmp_df)            
         }
     }      
 }
@@ -140,7 +140,7 @@ model_predictions_out = cdc_formatted_df %>%
     mutate(forecast_date = submission_date, type = "quantile") %>%
     left_join(fips, by = c("location_name_abbr" = "state")) %>%    
     rename(location = state_code, location_name = state_name) %>%
-    dplyr::select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
+    dplyr::select(forecast_date, target, location, target_end_date, type, quantile, value)
 
 point_estimate_out = filter(model_predictions_out, quantile == 0.5) %>%
     mutate(type = "point", quantile = NA)
@@ -154,18 +154,18 @@ model_predictions_out = bind_rows(model_predictions_out, point_estimate_out) %>%
 write_csv(model_predictions_out, sprintf('../output/%s-NotreDame-FRED.csv',submission_date))
 
 
-### For alex-----------------
-test_df = read_csv('../output/2020-06-01-NotreDame-FRED.csv')
-load('./forecast_states_20200601.RData')
+## ### For alex-----------------
+## test_df = read_csv('../output/2020-06-01-NotreDame-FRED.csv')
+## load('./forecast_states_20200601.RData')
 
-df.forecast = dplyr::select(df.forecast, -location) %>%
-    mutate(location_name = as.character(location_name))
-fips_codes = read_csv('fips_codes.csv')
-fips = fips_codes %>%
-    dplyr::select( state_code, state_name) %>%
-    rename(location = state_code, location_name = state_name) %>%
-    unique()
+## df.forecast = dplyr::select(df.forecast, -location) %>%
+##     mutate(location_name = as.character(location_name))
+## fips_codes = read_csv('fips_codes.csv')
+## fips = fips_codes %>%
+##     dplyr::select( state_code, state_name) %>%
+##     rename(location = state_code, location_name = state_name) %>%
+##     unique()
 
-formatted_df = left_join(df.forecast, fips, by = "location_name") %>%
-    dplyr::select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
+## formatted_df = left_join(df.forecast, fips, by = "location_name") %>%
+##     dplyr::select(forecast_date, target, location, location_name, target_end_date, type, quantile, value)
 

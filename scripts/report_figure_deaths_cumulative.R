@@ -136,11 +136,13 @@ for(ss in 1:length(states)){
 }
 
 # FORECAST
-plot(-100, -100, xlim = c(0.5, length(states)+0.5), 
-     ylim = c(min(CF_forecast$CF_mean, na.rm = T),
-              max(CF_forecast$CF_mean, na.rm = T)),
+plot(-100, -100, xlim = c(0.5, length(states)+0.5),
+     ylim = c(min(min(CF_fit$CF_mean, na.rm = T), min(CF_forecast$CF_mean, na.rm = T), na.rm = T),
+              max(max(CF_fit$CF_mean, na.rm = T), max(CF_forecast$CF_mean, na.rm = T), na.rm = T)),
      las = 2, xaxt = 'n', xlab = '', ylab = '', yaxt = 'n')
 
+##     ylim = c(min(CF_forecast$CF_mean, na.rm = T),
+##             max(CF_forecast$CF_mean, na.rm = T)),
 
 mtext(side = 3, sprintf("Cumulative deaths from %s %d\n through %s %d",
                         as.character(month(as.Date(fit_date),label = T)), day(as.Date(fit_date)),

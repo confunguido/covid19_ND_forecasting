@@ -28,13 +28,13 @@ jpeg('../figures/report_figure_parameter_periods.jpeg', width=7,height=5, units 
 layout(matrix(c(1,2,3,4),nrow = 2, byrow =T))
 par(mar = c(4,4,2,1))
 hist(periods_df$inf_period, main ="",xaxs = "i", yaxs = "i",
-     xlab = "Infectious period (days)", freq = F, col = "#e0e0e0", breaks = 1:17)
+     xlab = "Infectious period (days)", freq = F, col = "#e0e0e0", breaks = 0:17)
 
 hist(periods_df$symp_period, main = "",xaxs = "i", yaxs = "i", freq = F,
      xlab = "Symptomatic period (days)", col = "#e0e0e0", ylab = "")
 
 hist(intervals_df$serial_interval, main ="",xaxs = "i", yaxs = "i",freq = F,
-     xlab = "Serial interval (days)", xlim = c(0,30), col = "#e0e0e0")
+     xlab = "Serial interval (days)", xlim = c(-12,30), col = "#e0e0e0")
 
 hist(intervals_df$generation_interval, main ="", xaxs = "i", yaxs = "i", freq = F,
      xlab = "Generation interval (days)", xlim = c(0,30), col = "#e0e0e0", ylab = "")

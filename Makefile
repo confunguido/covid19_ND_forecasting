@@ -11,8 +11,8 @@ all: report forecasts
 CURRENT_DIR := $(shell pwd)
 PANDOC_NUM_DIR := ~/pandoc_tex_nos
 
-forecast_max_date = 2020-12-21
-forecast_date = 2020-11-23
+forecast_max_date = 2021-01-04
+forecast_date = 2020-12-07
 
 SRC_DIR = ./scripts
 DATA_DIR = ../experiments/Midwest_simulations/output/SHORT_FORECAST
